@@ -2,6 +2,7 @@ package workflows
 
 import (
 	"errors"
+	"time"
 
 	"go.temporal.io/sdk/workflow"
 )
@@ -22,8 +23,17 @@ func Workflow(ctx workflow.Context, input Input) (Output, error) {
 	}
 
 	result := 1
+	// Define query handler
+	err := workflow.SetQueryHandler(ctx, "partial_result", func() (int, error) {
+		return result, nil
+	})
+	if err != nil {
+		return Output{}, err
+	}
 
 	for i := 1; i <= input.Number; i++ {
+		workflow.Sleep(ctx, 5*time.Second)
+
 		result *= i
 	}
 
