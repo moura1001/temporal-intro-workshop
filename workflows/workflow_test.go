@@ -1,8 +1,10 @@
 package workflows
 
 import (
+	"moura1001/temporal_intro/activities"
 	"testing"
 
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"go.temporal.io/sdk/testsuite"
 )
@@ -29,12 +31,19 @@ func (s *WorkflowTestSuite) AfterTest(suiteName, testName string) {
 func (s *WorkflowTestSuite) TestSuccess() {
 	s.env.RegisterWorkflow(Workflow)
 
-	s.env.ExecuteWorkflow(Workflow, Input{5})
+	result := 1
+	for i := 1; i <= 5; i++ {
+		s.env.OnActivity(activities.Activity, mock.Anything,
+			activities.ActivityInput{Number: result, PartialStep: i},
+		).Return(activities.ActivityOutput{Result: result * i}, nil)
+		result *= i
+	}
+	s.env.ExecuteWorkflow(Workflow, WorkflowInput{5})
 
 	s.Require().True(s.env.IsWorkflowCompleted())
 	s.Require().NoError(s.env.GetWorkflowError())
 
-	var output Output
+	var output WorkflowOutput
 	s.Require().NoError(s.env.GetWorkflowResult(&output))
 
 	s.Equal(120, output.Result)

@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"moura1001/temporal_intro/activities"
 	"moura1001/temporal_intro/utils"
 	"moura1001/temporal_intro/workflows"
 
@@ -31,6 +32,7 @@ func main() {
 	w := worker.New(serviceClient, taskQueue, worker.Options{})
 	// Register workflows and activities
 	w.RegisterWorkflow(workflows.Workflow)
+	w.RegisterActivity(activities.Activity)
 
 	// Start worker
 	err = w.Run(worker.InterruptCh())
